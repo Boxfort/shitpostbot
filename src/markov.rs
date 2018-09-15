@@ -39,21 +39,39 @@ impl MarkovChain {
     }
 
     pub fn get_next(&mut self, word : Option<String>) -> Option<String> {
-        let range = Uniform::new(0, 100);
+        if self.values.contains_key(&word) { return None }
+
+
+        let mut total : u32 = 0;
+        // Entry is a HashMap<Option<String>, u32>
+        let mut entry = self.values.get(&word).unwrap();
+        entry.keys()
+             .for_each(|x| { entry.get(x)
+                                  .and_then(|y| Some(total += y) ); }
+                      );
+
+        let range = Uniform::new(0f64, 1f64);
         let mut rng = rand::thread_rng();
-        let a = range.sample(&mut rng);
+        let chance = range.sample(&mut rng);
 
-        let total = values.get(word);
+        let mut next : &Option<String> = &None;
 
-        None
+        for key in entry.keys() {
+            if chance < (*entry.get(key).unwrap() as f64 / total as f64) {
+                next = key;
+            }
+        }
+
+        next.clone()
     }
 
     fn add_pair(&mut self, from : Option<String>, to : Option<String>) {
         // Get the existing hashmap or create one if none exists.
-        let mut result = self.values.entry(from).or_insert(HashMap::new());
-        // Get the occurences of 'to' or set to 0 if it doesn't exist.
-        let mut entry = result.entry(to).or_insert(0);
-        *entry += 1;
+        let count = self.values.entry(from)
+                               .or_insert(HashMap::new())
+                               .entry(to)
+                               .or_insert(0);
+        *count += 1;
     }
 }
 
