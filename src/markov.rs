@@ -1,10 +1,15 @@
+
 use std::collections::HashMap;
 use std::io;
 use std::io::BufRead;
 use std::fs::File;
 
+extern crate rand;
+
+use markov::rand::distributions::{Distribution, Uniform};
+
 pub struct MarkovChain {
-    values : HashMap<String, (String, u32)>,
+    values : HashMap<Option<String>, HashMap<Option<String>, u32>>,
 }
 
 impl MarkovChain {
@@ -13,7 +18,7 @@ impl MarkovChain {
             values: HashMap::new(),
         }
     }
-    
+
     pub fn generate(&mut self, filepath : String) -> Result<bool, io::Error> {
         let file = File::open(filepath)?;
         let reader = io::BufReader::new(file);
@@ -23,17 +28,32 @@ impl MarkovChain {
             let mut prev : Option<String> = None;
 
             for word in clean.split(" ") {
-                if prev.is_some() { self.add_pair(prev.unwrap(), word.to_string()) };
+                self.add_pair(prev, Some(word.to_string()));
                 prev = Some(word.to_string());
             }
+            // Add terminator
+            self.add_pair(prev, None);
         }
 
         Ok(true)
     }
 
-    fn add_pair(&mut self, from : String, to : String) {
-        let result = self.values.entry(from).or_insert((to, 0));
-        result.1 += 1;
+    pub fn get_next(&mut self, word : Option<String>) -> Option<String> {
+        let range = Uniform::new(0, 100);
+        let mut rng = rand::thread_rng();
+        let a = range.sample(&mut rng);
+
+        let total = values.get(word);
+
+        None
+    }
+
+    fn add_pair(&mut self, from : Option<String>, to : Option<String>) {
+        // Get the existing hashmap or create one if none exists.
+        let mut result = self.values.entry(from).or_insert(HashMap::new());
+        // Get the occurences of 'to' or set to 0 if it doesn't exist.
+        let mut entry = result.entry(to).or_insert(0);
+        *entry += 1;
     }
 }
 
@@ -47,12 +67,11 @@ mod tests {
 
     #[test]
     fn test_add_pair() {
-        let key : String = "key".to_string();
-        let value : String = "value".to_string();
+        let key : Option<String> = Some("key".to_string());
+        let value : Option<String> = Some("value".to_string());
         let mut markov : MarkovChain = MarkovChain::new();
 
         markov.add_pair(key.clone(), value.clone());
-
-        assert_eq!(markov.values.get(&key).unwrap(), &(value, 1 as u32));
+        assert_eq!(markov.values.get(&key).unwrap().get(&value), Some(&1u32));
     }
 }
