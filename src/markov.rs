@@ -52,6 +52,20 @@ impl MarkovChain {
         }
     }
 
+    pub fn add_vec(&mut self, lines : Vec<String>) {
+        for line in lines {
+            let clean = clean_sentence(line);
+            let mut prev : Option<String> = None;
+
+            for word in clean.split(" ") {
+                self.add_pair(prev, Some(word.to_string()));
+                prev = Some(word.to_string());
+            }
+            // Add terminator
+            self.add_pair(prev, None);
+        }
+    }
+
     /// Gets the next word in the chain.
     ///
     /// Returns None if the word does not exist in the chain.
