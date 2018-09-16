@@ -42,6 +42,19 @@ impl MarkovChain {
         Ok(true)
     }
 
+    pub fn add_line(&mut self, line : String) {
+        let clean = clean_sentence(line);
+
+        let mut prev : Option<String> = None;
+        for word in clean.split(" ") {
+            self.add_pair(prev, Some(word.to_string()));
+            prev = Some(word.to_string());
+        }
+    }
+
+    /// Gets the next word in the chain.
+    ///
+    /// Returns None if the word does not exist in the chain.
     pub fn get_next(&mut self, word : Option<String>) -> Option<String> {
         if self.values.get(&word).is_none() { return None }
 
@@ -65,6 +78,12 @@ impl MarkovChain {
         }
     }
 
+    /// Adds a word pair to the hashmap.
+    ///
+    /// If the word pair already exists then the weight of the pair
+    /// is increased, otherwise it creates a new word pair.
+    /// The list of word pairs is then sorted by weight, and
+    /// the cumulative weight is calculated for each entry.
     fn add_pair(&mut self, from : Option<String>, to : Option<String>) {
 
         {
@@ -103,6 +122,7 @@ fn clean_sentence(s : String) -> String {
     s
 }
 
+// TODO: Tests
 #[cfg(test)]
 mod tests {
     use super::*;
