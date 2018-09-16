@@ -5,3 +5,4 @@ authors = ["Boxfort <jackwanderson@protonmail.com>"]
 
 [dependencies]
 rand = "0.5.5"
+discord = "0.8.0"
