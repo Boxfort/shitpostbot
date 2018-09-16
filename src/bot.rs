@@ -32,6 +32,7 @@ impl DiscordBot {
             match self.connection.0.recv_event() {
                 Ok(Event::MessageCreate(message)) => {
                     println!("{} says: {}", message.author.name, message.content);
+                    if message.author
                     if message.content == "!shitpost" {
                         self.discord.broadcast_typing(message.channel_id);
                         self.let_it_rip(message.channel_id);
@@ -57,13 +58,13 @@ impl DiscordBot {
         }
     }
 
+    // TODO: Remove messages from the bot
+    //       Add a limit
     fn get_all_messages(&mut self, channel : ChannelId, before : MessageId) -> Vec<String> {
         let mut id = before;
         let mut message_vec : Vec<String> = vec!();
-        let mut retrieved = true;
 
-
-        while retrieved {
+        loop {
             println!("Getting messages before {}", &id);
 
             let mut result = self.discord.get_messages(channel, GetMessages::Before(id), Some(100));
@@ -71,7 +72,6 @@ impl DiscordBot {
             let mut result: Vec<String> = match result {
                 Ok(m) =>  {
                     if m.len() == 0 {
-                        retrieved = false;
                         break;
                     }
                     id = m.iter().last().unwrap().id;
