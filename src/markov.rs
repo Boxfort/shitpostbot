@@ -1,4 +1,3 @@
-
 use std::collections::HashMap;
 use std::io;
 use std::io::BufRead;
@@ -8,8 +7,9 @@ extern crate rand;
 
 use markov::rand::distributions::{Distribution, Uniform};
 
+
 pub struct MarkovChain {
-    values : HashMap<Option<String>, HashMap<Option<String>, u32>>,
+    values : HashMap<Option<String>, Vec<(Option<String>, u32, u32)>>,
 }
 
 impl MarkovChain {
@@ -23,6 +23,7 @@ impl MarkovChain {
         let file = File::open(filepath)?;
         let reader = io::BufReader::new(file);
 
+        // Generate the markov chain
         for line in reader.lines() {
             let clean = clean_sentence(line?.to_string());
             let mut prev : Option<String> = None;
@@ -34,44 +35,67 @@ impl MarkovChain {
             // Add terminator
             self.add_pair(prev, None);
         }
+        // Sort the chain
+
+        // Add cumulative weights
 
         Ok(true)
     }
 
     pub fn get_next(&mut self, word : Option<String>) -> Option<String> {
-        if self.values.contains_key(&word) { return None }
+        if self.values.get(&word).is_none() { return None }
 
-
-        let mut total : u32 = 0;
-        // Entry is a HashMap<Option<String>, u32>
-        let mut entry = self.values.get(&word).unwrap();
-        entry.keys()
-             .for_each(|x| { entry.get(x)
-                                  .and_then(|y| Some(total += y) ); }
-                      );
-
-        let range = Uniform::new(0f64, 1f64);
+        // In range of 0 to max cumulative weight
+        let range = Uniform::new(0, self.values[&word].iter().last().unwrap().2);
         let mut rng = rand::thread_rng();
         let chance = range.sample(&mut rng);
 
-        let mut next : &Option<String> = &None;
+        let result = self.values[&word].binary_search_by_key(&chance, |x| x.2);
 
-        for key in entry.keys() {
-            if chance < (*entry.get(key).unwrap() as f64 / total as f64) {
-                next = key;
-            }
+        // Return closest index found
+        match result {
+            Ok(x) =>  {
+                //println!("CHANCE - {}, IDX - {}", chance, x);
+                self.values[&word][x].0.clone()
+            },
+            Err(x) => {
+                //println!("CHANCE - {}, IDX - {}", chance, x);
+                self.values[&word][x].0.clone()
+            },
         }
-
-        next.clone()
     }
 
     fn add_pair(&mut self, from : Option<String>, to : Option<String>) {
-        // Get the existing hashmap or create one if none exists.
-        let count = self.values.entry(from)
-                               .or_insert(HashMap::new())
-                               .entry(to)
-                               .or_insert(0);
-        *count += 1;
+
+        {
+            // Get the existing vec or create one if none exists.
+            let entries = self.values.entry(from.clone())
+                                   .or_insert(vec!((to.clone(), 0, 0)));
+
+
+            // Find the entry in the vec corresponding to 'to' or insert it.
+            if !entries.iter().find(|x| x.0 == to ).is_some() {
+                entries.insert(0, (to.clone(), 0, 0))
+            }
+
+            // Increase the weight by one
+            for x in entries.iter_mut() {
+                if x.0 == to {
+                    x.1 += 1;
+                    break;
+                }
+            }
+        }
+
+        // Sort the vec by weight.
+        self.values.get_mut(&from).unwrap().sort_by_key(|k| k.1);
+
+        // Calculate cumulative weights
+        let mut last = 0;
+        for entry in self.values.get_mut(&from).unwrap().iter_mut() {
+            entry.2 = entry.1 + last;
+            last = entry.2;
+        }
     }
 }
 
