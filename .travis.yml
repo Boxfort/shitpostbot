@@ -7,7 +7,6 @@ matrix:
   allow_failures:
     - rust: nightly
   fast_finish: true
-libsodium-dev
 before_install:
   - sudo apt-get install libsodium-dev
 script:
