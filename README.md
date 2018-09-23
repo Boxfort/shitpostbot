@@ -1,1 +1,1 @@
-# ShitpostBot [![Build Status](https://travis-ci.org/boxfort/shitpostbot.svg?branch=master)](https://travis-ci.org/boxfort/shitpostbot)
+# ShitpostBot [![Build Status](https://travis-ci.com/Boxfort/shitpostbot.svg?branch=master)](https://travis-ci.com/Boxfort/shitpostbot)
