@@ -13,6 +13,10 @@ pub struct DiscordBot {
 }
 
 impl DiscordBot {
+    /// Creates a new discord bot and attempts to connect to a server.
+    ///
+    /// Requires the env variable DISCORD_TOKEN to be set to a valid
+    /// discord token.
     pub fn new() -> DiscordBot {
         let discord = Discord::from_bot_token(&env::var("DISCORD_TOKEN").expect("Expected token"))
             .expect("login failed");
@@ -63,6 +67,8 @@ impl DiscordBot {
         }
     }
 
+    /// Gets all messages from the channel a message was recieved from
+    /// and creates a markov chain with the retreived messages.
     fn generate(&mut self, message: Message) {
         // Retreive messages
         let _ = self.discord.send_message(
@@ -89,6 +95,7 @@ impl DiscordBot {
 
     // TODO: Remove messages from the bot
     //       Add a limit
+    /// Gets all messages from the specified channel.
     fn get_all_messages(&mut self, channel: ChannelId, before: MessageId) -> Vec<String> {
         let mut id = before;
         let mut message_vec: Vec<String> = vec![];
@@ -107,7 +114,7 @@ impl DiscordBot {
                     id = m.iter().last().unwrap().id;
                     m.iter().map(|x| x.clone().content).collect()
                 }
-                Err(e) => panic!("Shits fucked"),
+                Err(e) => panic!("Could not get messages. {:?}", e),
             };
 
             message_vec.append(&mut result);
