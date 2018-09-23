@@ -1,2 +1,2 @@
-mod markov;
 mod bot;
+mod markov;
