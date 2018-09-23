@@ -8,6 +8,8 @@ matrix:
     - rust: nightly
   fast_finish: true
 before_install:
+  - echo "deb http://uk.archive.ubuntu.com/ubuntu/ xenial main restricted" | sudo tee -a /etc/apt/sources.list
+  - echo "deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update
   - sudo apt-get install libsodium-dev
 script:
