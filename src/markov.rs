@@ -19,29 +19,20 @@ impl MarkovChain {
         }
     }
 
+    /// Genenates a new markov chain from the sentences in a file
     pub fn generate(&mut self, filepath : String) -> Result<bool, io::Error> {
         let file = File::open(filepath)?;
         let reader = io::BufReader::new(file);
 
         // Generate the markov chain
         for line in reader.lines() {
-            let clean = clean_sentence(line?.to_string());
-            let mut prev : Option<String> = None;
-
-            for word in clean.split(" ") {
-                self.add_pair(prev, Some(word.to_string()));
-                prev = Some(word.to_string());
-            }
-            // Add terminator
-            self.add_pair(prev, None);
+            self.add_line(line.unwrap());
         }
-        // Sort the chain
-
-        // Add cumulative weights
 
         Ok(true)
     }
 
+    /// Adds a line/sentence to the chain.
     pub fn add_line(&mut self, line : String) {
         let clean = clean_sentence(line);
 
@@ -52,17 +43,10 @@ impl MarkovChain {
         }
     }
 
+    /// Adds a vector of strings to the chain.
     pub fn add_vec(&mut self, lines : Vec<String>) {
         for line in lines {
-            let clean = clean_sentence(line);
-            let mut prev : Option<String> = None;
-
-            for word in clean.split(" ") {
-                self.add_pair(prev, Some(word.to_string()));
-                prev = Some(word.to_string());
-            }
-            // Add terminator
-            self.add_pair(prev, None);
+            self.add_line(line);
         }
     }
 
@@ -132,6 +116,7 @@ impl MarkovChain {
     }
 }
 
+/// TODO
 fn clean_sentence(s : String) -> String {
     s
 }
