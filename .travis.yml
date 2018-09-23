@@ -1,3 +1,5 @@
+dist: trusty
+sudo: required
 language: rust
 rust:
   - stable
@@ -8,10 +10,6 @@ matrix:
     - rust: nightly
   fast_finish: true
 before_install:
-  - echo "deb http://uk.archive.ubuntu.com/ubuntu/ xenial main restricted" | sudo tee -a /etc/apt/sources.list
-  - echo "deb http://uk.archive.ubuntu.com/ubuntu/ xenial-updates main restricted" | sudo tee -a /etc/apt/sources.list
-  - sudo apt-get update
-  - sudo apt-get upgrade
   - sudo apt-get install libsodium-dev
 script:
   - cargo build --verbose --all
