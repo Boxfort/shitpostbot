@@ -11,6 +11,8 @@ pub struct MarkovChain {
     values: HashMap<Option<String>, Vec<(Option<String>, u32, u32)>>,
 }
 
+// TODO: seperate adding pairs from sorting and calculating cumulative
+//       weights to speed up creation time.
 impl MarkovChain {
     pub fn new() -> MarkovChain {
         MarkovChain {
